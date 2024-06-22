@@ -18,11 +18,6 @@ do
     git pull origin master -v -f >> $LOG_FILE 2>&1
     git reset --hard origin/master >> $LOG_FILE 2>&1
     git pull origin master -v -f >> $LOG_FILE 2>&1
-    bash docker/tunnel/clean_ports.sh >> $LOG_FILE 2>&1
-    gradle composeProdUp >> $LOG_FILE 2>&1
-    bash docker/tunnel/run_tunnel.sh &
-    sleep 10 & pid=$!
-    kill $pid
   elif [ "$branch" == "dev" ]; then
     echo "DEV: Pulling latest changes from $branch and running gradle task" >> $LOG_FILE
     cd $LOCAL_REPO_DIR
@@ -32,7 +27,6 @@ do
     git pull origin dev -v -f >> $LOG_FILE 2>&1
     git reset --hard origin/dev >> $LOG_FILE 2>&1
     git pull origin dev -v -f >> $LOG_FILE 2>&1
-    gradle composeDevUp >> $LOG_FILE 2>&1
   fi
 done
 
