@@ -1,0 +1,12 @@
+    LOCAL_REPO_DIR=/home/git/srv/services/project-base
+    LOG_FILE=/home/git/srv/repositories/project-base.git/hooks/git-hooks.log
+    
+    echo "DEV: Pulling latest changes and running gradle task" >> $LOG_FILE
+    cd $LOCAL_REPO_DIR
+    unset GIT_DIR
+    #dir >> $LOG_FILE 2>&1
+    #git init >> $LOG_FILE 2>&1
+    git switch dev >> $LOG_FILE 2>&1
+    git reset --hard origin/dev >> $LOG_FILE 2>&1
+    git pull origin dev -v -f >> $LOG_FILE 2>&1
+    gradle composeDevUp >> $LOG_FILE 2>&1

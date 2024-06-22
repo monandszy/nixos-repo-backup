@@ -1,0 +1,40 @@
+#!/run/current-system/sw/bin/bash
+
+LOCAL_REPO_DIR=/home/git/srv/services/project-base
+LOG_FILE=/home/git/srv/repositories/project-base.git/hooks/git-hooks.log
+
+unset GIT_DIR
+echo "<-----Push detected"
+while read oldrev newrev refname
+do
+  # Extract branch name
+  branch=$(echo $refname | sed 's/refs\/heads\///')
+
+  # Define actions based on the branch
+  if [ "$branch" == "master" ]; then
+    echo "MASTER: Pulling latest changes from $branch and running gradle task" >> $LOG_FILE
+    cd $LOCAL_REPO_DIR
+    git switch master >> $LOG_FILE 2>&1
+    git pull origin master -v -f >> $LOG_FILE 2>&1
+    git reset --hard origin/master >> $LOG_FILE 2>&1
+    git pull origin master -v -f >> $LOG_FILE 2>&1
+    bash docker/tunnel/clean_ports.sh >> $LOG_FILE 2>&1
+    gradle composeProdUp >> $LOG_FILE 2>&1
+    bash docker/tunnel/run_tunnel.sh &
+    sleep 10 & pid=$!
+    kill $pid
+  elif [ "$branch" == "dev" ]; then
+    echo "DEV: Pulling latest changes from $branch and running gradle task" >> $LOG_FILE
+    cd $LOCAL_REPO_DIR
+    #dir >> $LOG_FILE 2>&1
+    #git init >> $LOG_FILE 2>&1
+    git switch dev >> $LOG_FILE 2>&1
+    git pull origin dev -v -f >> $LOG_FILE 2>&1
+    git reset --hard origin/dev >> $LOG_FILE 2>&1
+    git pull origin dev -v -f >> $LOG_FILE 2>&1
+    gradle composeDevUp >> $LOG_FILE 2>&1
+  fi
+done
+
+# Log completion
+echo "Script completed----->"
